@@ -16,33 +16,15 @@ class FooterSection extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.symmetric(
         horizontal: isMobile ? 20 : 60,
-        vertical: 40,
+        vertical: 60,
       ),
       decoration: BoxDecoration(
-        gradient: isDarkMode
-            ? LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  AppTheme.cardDark,
-                  AppTheme.gradientStart.withOpacity(0.2),
-                  AppTheme.gradientEnd.withOpacity(0.2),
-                ],
-              )
-            : LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  AppTheme.cardLight,
-                  AppTheme.primaryBlue.withOpacity(0.05),
-                  AppTheme.lightBlue.withOpacity(0.05),
-                ],
-              ),
+        color: isDarkMode ? AppTheme.darkBackground : AppTheme.lightBackground,
         border: Border(
           top: BorderSide(
             color: isDarkMode
-                ? AppTheme.primaryBlue.withOpacity(0.2)
-                : AppTheme.primaryBlue.withOpacity(0.1),
+                ? Colors.white.withOpacity(0.05)
+                : Colors.black.withOpacity(0.05),
             width: 1,
           ),
         ),
@@ -52,17 +34,25 @@ class FooterSection extends StatelessWidget {
           // Footer Content
           isMobile ? _buildMobileLayout() : _buildDesktopLayout(),
 
-          const SizedBox(height: 30),
+          const SizedBox(height: 50),
 
           // Divider
           Container(
             height: 1,
-            color: isDarkMode
-                ? AppTheme.primaryBlue.withOpacity(0.2)
-                : AppTheme.primaryBlue.withOpacity(0.1),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.transparent,
+                  isDarkMode
+                      ? Colors.white.withOpacity(0.1)
+                      : Colors.black.withOpacity(0.1),
+                  Colors.transparent,
+                ],
+              ),
+            ),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 30),
 
           // Copyright
           _buildCopyright(),
@@ -99,9 +89,9 @@ class FooterSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildLogoSection(),
-        const SizedBox(height: 30),
+        const SizedBox(height: 40),
         _buildQuickLinks(),
-        const SizedBox(height: 30),
+        const SizedBox(height: 40),
         _buildContactInfo(),
       ],
     );
@@ -118,20 +108,17 @@ class FooterSection extends StatelessWidget {
           child: const Text(
             '<Abhi/>',
             style: TextStyle(
-              fontSize: 32,
+              fontSize: 36,
               fontWeight: FontWeight.bold,
               color: Colors.white,
+              letterSpacing: 1.0,
             ),
           ),
         ),
-        const SizedBox(height: 15),
+        const SizedBox(height: 20),
         Text(
-          'Flutter Developer building beautiful\nand functional applications.',
-          style: TextStyle(
-            fontSize: 14,
-            height: 1.6,
-            color: isDarkMode ? AppTheme.textGrey : AppTheme.textGrey,
-          ),
+          'Crafting high-performance digital experiences\nwith Flutter and modern design principles.',
+          style: TextStyle(fontSize: 15, height: 1.8, color: AppTheme.textGrey),
         ),
       ],
     );
@@ -143,19 +130,19 @@ class FooterSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Quick Links',
+          'Explore',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
+            letterSpacing: 0.5,
             color: isDarkMode ? AppTheme.textLight : AppTheme.textDark,
           ),
         ),
-        const SizedBox(height: 15),
-        _buildFooterLink('Home'),
-        _buildFooterLink('About'),
-        _buildFooterLink('Skills'),
-        _buildFooterLink('Projects'),
-        _buildFooterLink('Contact'),
+        const SizedBox(height: 25),
+        _buildFooterLink('About Me'),
+        _buildFooterLink('Key Skills'),
+        _buildFooterLink('Portfolio'),
+        _buildFooterLink('Get In Touch'),
       ],
     );
   }
@@ -170,13 +157,14 @@ class FooterSection extends StatelessWidget {
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
+            letterSpacing: 0.5,
             color: isDarkMode ? AppTheme.textLight : AppTheme.textDark,
           ),
         ),
+        const SizedBox(height: 25),
+        _buildInfoRow(Icons.email_outlined, AppConstants.email),
         const SizedBox(height: 15),
-        _buildInfoRow(Icons.email, AppConstants.email),
-        const SizedBox(height: 10),
-        _buildInfoRow(Icons.location_on, 'Kerala, India'),
+        _buildInfoRow(Icons.location_on_outlined, 'Kerala, India'),
       ],
     );
   }
@@ -184,16 +172,12 @@ class FooterSection extends StatelessWidget {
   // Footer Link
   Widget _buildFooterLink(String text) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 12),
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
         child: Text(
           text,
-          style: TextStyle(
-            fontSize: 14,
-            color: isDarkMode ? AppTheme.textGrey : AppTheme.textGrey,
-            decoration: TextDecoration.none,
-          ),
+          style: TextStyle(fontSize: 15, color: AppTheme.textGrey),
         ),
       ),
     );
@@ -203,19 +187,12 @@ class FooterSection extends StatelessWidget {
   Widget _buildInfoRow(IconData icon, String text) {
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 16,
-          color: isDarkMode ? AppTheme.primaryBlue : AppTheme.primaryBlue,
-        ),
-        const SizedBox(width: 8),
+        Icon(icon, size: 20, color: AppTheme.primaryBlue),
+        const SizedBox(width: 12),
         Expanded(
           child: Text(
             text,
-            style: TextStyle(
-              fontSize: 14,
-              color: isDarkMode ? AppTheme.textGrey : AppTheme.textGrey,
-            ),
+            style: TextStyle(fontSize: 15, color: AppTheme.textGrey),
           ),
         ),
       ],
@@ -224,13 +201,19 @@ class FooterSection extends StatelessWidget {
 
   // Copyright
   Widget _buildCopyright() {
-    return Text(
-      '© 2025 ${AppConstants.name} | Built with Flutter ',
-      textAlign: TextAlign.center,
-      style: TextStyle(
-        fontSize: 14,
-        color: isDarkMode ? AppTheme.textGrey : AppTheme.textGrey,
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          '© 2025 ${AppConstants.name} | Built with ',
+          style: TextStyle(fontSize: 14, color: AppTheme.textGrey),
+        ),
+        const Icon(Icons.favorite, color: Colors.red, size: 14),
+        Text(
+          ' using Flutter',
+          style: TextStyle(fontSize: 14, color: AppTheme.textGrey),
+        ),
+      ],
     );
   }
 }

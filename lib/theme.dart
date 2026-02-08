@@ -2,29 +2,33 @@ import 'package:flutter/material.dart';
 
 // App Theme Configuration
 class AppTheme {
-  // Primary Blue Theme Colors (based on user preference)
-  static const Color primaryBlue = Color(0xFF2196F3);
-  static const Color darkBlue = Color(0xFF1976D2);
-  static const Color lightBlue = Color(0xFF64B5F6);
+  // Premium Color Palette
+  static const Color primaryBlue = Color(
+    0xFF2563EB,
+  ); // Vibrant Blue from screenshot
+  static const Color accentBlue = Color(0xFF3B82F6);
+  static const Color darkBlue = Color(0xFF1D4ED8);
+  static const Color lightBlue = Color(0xFF60A5FA);
 
   // Gradient Colors
-  static const Color gradientStart = Color(0xFF6A11CB);
-  static const Color gradientEnd = Color(0xFF2575FC);
+  static const Color gradientStart = Color(0xFF3B82F6);
+  static const Color gradientEnd = Color(0xFF8B5CF6); // Purple-600
 
   // Accent Gradient Colors
-  static const Color accentGradientStart = Color(0xFFFF6B6B);
-  static const Color accentGradientEnd = Color(0xFFFFD93D);
+  static const Color accentGradientStart = Color(0xFFF43F5E); // Rose-500
+  static const Color accentGradientEnd = Color(0xFFFB923C); // Amber-400
 
-  // Background Colors
-  static const Color darkBackground = Color(0xFF0A0E27);
-  static const Color lightBackground = Color(0xFFF5F7FA);
-  static const Color cardDark = Color(0xFF1E1E2E);
-  static const Color cardLight = Color(0xFFFFFFFF);
+  // Background Surface Colors
+  static const Color darkBackground = Color(0xFF020617); // Slate-950
+  static const Color lightBackground = Color(0xFFF8FAFC);
+  static const Color cardDark = Color(0xFF0F172A); // Slate-900
+  static const Color cardLight = Colors.white;
 
-  // Text Colors
-  static const Color textDark = Color(0xFF1A1A2E);
-  static const Color textLight = Color(0xFFFFFFFF);
-  static const Color textGrey = Color(0xFF6B7280);
+  // Premium Text Colors
+  static const Color textDark = Color(0xFF0F172A);
+  static const Color textLight = Color(0xFFF8FAFC);
+  static const Color textGrey = Color(0xFF64748B); // Slate-500
+  static const Color textDim = Color(0xFF475569); // Slate-600
 
   // Primary Gradient
   static const LinearGradient primaryGradient = LinearGradient(
@@ -33,64 +37,94 @@ class AppTheme {
     end: Alignment.bottomRight,
   );
 
-  // Accent Gradient
   static const LinearGradient accentGradient = LinearGradient(
     colors: [accentGradientStart, accentGradientEnd],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  // Dark Theme
+  // Reusable Shadow System
+  static List<BoxShadow> premiumShadow = [
+    BoxShadow(
+      color: Colors.black.withOpacity(0.08),
+      blurRadius: 24,
+      offset: const Offset(0, 12),
+    ),
+    BoxShadow(
+      color: Colors.black.withOpacity(0.04),
+      blurRadius: 8,
+      offset: const Offset(0, 4),
+    ),
+  ];
+
+  static List<BoxShadow> glowShadow(Color color) => [
+    BoxShadow(color: color.withOpacity(0.3), blurRadius: 20, spreadRadius: 2),
+  ];
+
+  // Dark Theme Definition
   static ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
     primaryColor: primaryBlue,
     scaffoldBackgroundColor: darkBackground,
     fontFamily: 'Poppins',
+    cardTheme: CardThemeData(
+      color: cardDark,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+    ),
     textTheme: const TextTheme(
       displayLarge: TextStyle(
+        fontSize: 64,
+        fontWeight: FontWeight.bold,
+        color: textLight,
+        letterSpacing: -1.5,
+      ),
+      displayMedium: TextStyle(
         fontSize: 48,
         fontWeight: FontWeight.bold,
         color: textLight,
-      ),
-      displayMedium: TextStyle(
-        fontSize: 36,
-        fontWeight: FontWeight.bold,
-        color: textLight,
+        letterSpacing: -0.5,
       ),
       headlineMedium: TextStyle(
-        fontSize: 28,
-        fontWeight: FontWeight.w600,
+        fontSize: 32,
+        fontWeight: FontWeight.w700,
         color: textLight,
       ),
-      bodyLarge: TextStyle(fontSize: 16, color: textLight),
-      bodyMedium: TextStyle(fontSize: 14, color: textGrey),
+      bodyLarge: TextStyle(fontSize: 18, color: textLight, height: 1.6),
+      bodyMedium: TextStyle(fontSize: 16, color: textGrey, height: 1.6),
     ),
   );
 
-  // Light Theme
+  // Light Theme Definition
   static ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,
     primaryColor: primaryBlue,
     scaffoldBackgroundColor: lightBackground,
     fontFamily: 'Poppins',
+    cardTheme: CardThemeData(
+      color: cardLight,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+    ),
     textTheme: const TextTheme(
       displayLarge: TextStyle(
+        fontSize: 64,
+        fontWeight: FontWeight.bold,
+        color: textDark,
+        letterSpacing: -1.5,
+      ),
+      displayMedium: TextStyle(
         fontSize: 48,
         fontWeight: FontWeight.bold,
         color: textDark,
       ),
-      displayMedium: TextStyle(
-        fontSize: 36,
-        fontWeight: FontWeight.bold,
-        color: textDark,
-      ),
       headlineMedium: TextStyle(
-        fontSize: 28,
-        fontWeight: FontWeight.w600,
+        fontSize: 32,
+        fontWeight: FontWeight.w700,
         color: textDark,
       ),
-      bodyLarge: TextStyle(fontSize: 16, color: textDark),
-      bodyMedium: TextStyle(fontSize: 14, color: textGrey),
+      bodyLarge: TextStyle(fontSize: 18, color: textDark, height: 1.6),
+      bodyMedium: TextStyle(fontSize: 16, color: textGrey, height: 1.6),
     ),
   );
 }
@@ -98,11 +132,16 @@ class AppTheme {
 // App Constants
 class AppConstants {
   // Personal Information
-  static const String name = "Abhinav K";
+  static const String name = "Abhinav Kallingal";
   static const String jobTitle = "Flutter Developer";
   static const String email = "abhinav.fltr@gmail.com";
-  static const String linkedin = "www.linkedin.com/in/abhinav-kallingal-764834316i";
+  static const String linkedin =
+      "www.linkedin.com/in/abhinav-kallingal-764834316i";
   static const String github = "https://github.com/abhinavkalingal";
+
+  // Hero Section
+  static const String heroDescription =
+      "Architecting high-performance Flutter applications with a focus on immersive UX and scalable engineering.";
 
   // About Section
   static const String aboutText =
@@ -162,7 +201,32 @@ class AppConstants {
       "techStack": "Flutter, Dart, Bloc, github",
       "githubLink": "https://github.com/abhinavkalingal/netflix_ui_clone.git",
     },
-    
-    
+  ];
+  // Experience
+  static const List<Map<String, dynamic>> experiences = [
+    {
+      "company": "Oxdo Technologies Pvt Ltd",
+      "role": "Flutter Developer Trainee",
+      "period": "2024 - Present",
+      "description":
+          "Leading mobile app development using Flutter. Implementing clean architecture, state management with Riverpod, and complex UI animations. Collaborating with cross-functional teams to deliver high-quality products.",
+      "achievements": [
+        "Architected and deployed 3+ production-ready apps",
+        "Optimized app performance by 40% using best practices",
+        "Designed and implemented high-fidelity UI components",
+      ],
+    },
+    {
+      "company": "Freelance Developer",
+      "role": "Full Stack Contributor",
+      "period": "2023 - 2024",
+      "description":
+          "Worked on diverse projects ranging from small business websites to complex mobile applications. Focused on delivering user-centric solutions using Flutter and Firebase.",
+      "achievements": [
+        "Developed a scalable CRM for local businesses",
+        "Integrated multi-role authentication and real-time databases",
+        "Collaborated with clients to define product roadmaps",
+      ],
+    },
   ];
 }

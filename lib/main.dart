@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
+
 import 'theme.dart';
 import 'widgets/navigation_bar.dart';
 import 'widgets/hero_section.dart';
@@ -6,10 +10,49 @@ import 'widgets/about_section.dart';
 import 'widgets/skills_section.dart';
 import 'widgets/projects_section.dart';
 import 'widgets/contact_section.dart';
+import 'widgets/experience_section.dart';
 import 'widgets/footer_section.dart';
 
-void main() {
-  runApp(const MyPortfolioApp());
+import 'features/portfolio/data/datasources/portfolio_remote_data_source.dart';
+import 'features/portfolio/data/repositories/portfolio_repository_impl.dart';
+import 'features/portfolio/domain/usecases/get_experiences.dart';
+import 'features/portfolio/domain/usecases/get_projects.dart';
+import 'features/portfolio/domain/usecases/get_skills.dart';
+import 'features/portfolio/presentation/providers/portfolio_provider.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Note: Firebase requires platform-specific configuration (google-services.json etc.)
+  // We keep it commented out or handled safely for the initial transition.
+  try {
+    // await Firebase.initializeApp();
+  } catch (e) {
+    debugPrint("Firebase initialization error: $e");
+  }
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) {
+            final dataSource = PortfolioRemoteDataSourceImpl(
+              firestore: FirebaseFirestore.instance,
+            );
+            final repository = PortfolioRepositoryImpl(
+              remoteDataSource: dataSource,
+            );
+            return PortfolioProvider(
+              getProjectsUseCase: GetProjectsUseCase(repository),
+              getSkillsUseCase: GetSkillsUseCase(repository),
+              getExperiencesUseCase: GetExperiencesUseCase(repository),
+            )..fetchPortfolioData();
+          },
+        ),
+      ],
+      child: const MyPortfolioApp(),
+    ),
+  );
 }
 
 class MyPortfolioApp extends StatefulWidget {
@@ -31,7 +74,7 @@ class _MyPortfolioAppState extends State<MyPortfolioApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Portfolio-Abhinav',
+      title: 'Portfolio - ${AppConstants.name}',
       debugShowCheckedModeBanner: false,
       theme: _isDarkMode ? AppTheme.darkTheme : AppTheme.lightTheme,
       home: PortfolioHomePage(
@@ -61,6 +104,7 @@ class _PortfolioHomePageState extends State<PortfolioHomePage> {
 
   final GlobalKey _heroKey = GlobalKey();
   final GlobalKey _aboutKey = GlobalKey();
+  final GlobalKey _experienceKey = GlobalKey();
   final GlobalKey _skillsKey = GlobalKey();
   final GlobalKey _projectsKey = GlobalKey();
   final GlobalKey _contactKey = GlobalKey();
@@ -76,15 +120,16 @@ class _PortfolioHomePageState extends State<PortfolioHomePage> {
 
     if (index == 0) targetKey = _heroKey;
     if (index == 1) targetKey = _aboutKey;
-    if (index == 2) targetKey = _skillsKey;
-    if (index == 3) targetKey = _projectsKey;
-    if (index == 4) targetKey = _contactKey;
+    if (index == 2) targetKey = _experienceKey;
+    if (index == 3) targetKey = _skillsKey;
+    if (index == 4) targetKey = _projectsKey;
+    if (index == 5) targetKey = _contactKey;
 
     if (targetKey != null && targetKey.currentContext != null) {
       Scrollable.ensureVisible(
         targetKey.currentContext!,
-        duration: const Duration(milliseconds: 800),
-        curve: Curves.easeInOut,
+        duration: const Duration(milliseconds: 1000),
+        curve: Curves.fastOutSlowIn,
       );
     }
   }
@@ -97,11 +142,30 @@ class _PortfolioHomePageState extends State<PortfolioHomePage> {
           : AppTheme.lightBackground,
       body: Stack(
         children: [
+          // Background Glows
+          if (widget.isDarkMode)
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: Alignment.topLeft,
+                    radius: 1.2,
+                    colors: [
+                      AppTheme.primaryBlue.withOpacity(0.05),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
           SingleChildScrollView(
             controller: _scrollController,
             child: Column(
               children: [
-                const SizedBox(height: 80),
+                // Spacer for Floating Navigation Bar
+                const SizedBox(height: 100),
+
                 Container(
                   key: _heroKey,
                   child: HeroSection(isDarkMode: widget.isDarkMode),
@@ -109,6 +173,10 @@ class _PortfolioHomePageState extends State<PortfolioHomePage> {
                 Container(
                   key: _aboutKey,
                   child: AboutSection(isDarkMode: widget.isDarkMode),
+                ),
+                Container(
+                  key: _experienceKey,
+                  child: ExperienceSection(isDarkMode: widget.isDarkMode),
                 ),
                 Container(
                   key: _skillsKey,
@@ -126,6 +194,8 @@ class _PortfolioHomePageState extends State<PortfolioHomePage> {
               ],
             ),
           ),
+
+          // Floating Navigation Bar
           Positioned(
             top: 0,
             left: 0,

@@ -40,47 +40,39 @@ class ProjectsSection extends StatelessWidget {
         ShaderMask(
           shaderCallback: (bounds) =>
               AppTheme.primaryGradient.createShader(bounds),
-          child: Text(
-            'My Projects',
+          child: const Text(
+            'Featured Projects',
             style: TextStyle(
-              fontSize: 40,
-              fontWeight: FontWeight.bold,
-              color: isDarkMode ? AppTheme.textLight : AppTheme.textDark,
+              fontSize: 48,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              letterSpacing: -1,
             ),
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
         Container(
           width: 80,
-          height: 4,
+          height: 6,
           decoration: BoxDecoration(
             gradient: AppTheme.primaryGradient,
-            borderRadius: BorderRadius.circular(2),
-          ),
-        ),
-        const SizedBox(height: 20),
-        Text(
-          'Recent work and personal projects',
-          style: TextStyle(
-            fontSize: 18,
-            color: isDarkMode ? AppTheme.textGrey : AppTheme.textGrey,
+            borderRadius: BorderRadius.circular(10),
           ),
         ),
       ],
     );
   }
 
-  // Projects Grid with Enhanced Layout
+  // Projects Grid
   Widget _buildProjectsGrid(bool isMobile) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Better responsive layout
         int crossAxisCount;
         if (isMobile) {
           crossAxisCount = 1;
-        } else if (constraints.maxWidth > 1400) {
+        } else if (constraints.maxWidth > 1200) {
           crossAxisCount = 3;
-        } else if (constraints.maxWidth > 900) {
+        } else if (constraints.maxWidth > 800) {
           crossAxisCount = 2;
         } else {
           crossAxisCount = 1;
@@ -91,372 +83,235 @@ class ProjectsSection extends StatelessWidget {
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: crossAxisCount,
-            crossAxisSpacing: isMobile ? 20 : 30,
-            mainAxisSpacing: isMobile ? 20 : 30,
-            childAspectRatio: isMobile
-                ? 0.85
-                : (crossAxisCount == 3 ? 0.75 : 1.1),
+            crossAxisSpacing: 30,
+            mainAxisSpacing: 30,
+            childAspectRatio: isMobile ? 0.85 : 0.8,
           ),
           itemCount: AppConstants.projects.length,
           itemBuilder: (context, index) {
-            final project = AppConstants.projects[index];
-            return _buildProjectCard(
-              project['title'] as String,
-              project['description'] as String,
-              project['techStack'] as String,
-              project['githubLink'] as String,
-              index,
+            return _ProjectCardWidget(
+              project: AppConstants.projects[index],
+              isDarkMode: isDarkMode,
             );
           },
         );
       },
     );
   }
-
-  // Project Card with Hover Effect
-  Widget _buildProjectCard(
-    String title,
-    String description,
-    String techStack,
-    String githubLink,
-    int index,
-  ) {
-    return _ProjectCardWidget(
-      title: title,
-      description: description,
-      techStack: techStack,
-      githubLink: githubLink,
-      index: index,
-      isDarkMode: isDarkMode,
-    );
-  }
 }
 
-// Stateful Project Card Widget for Hover Effect
 class _ProjectCardWidget extends StatefulWidget {
-  final String title;
-  final String description;
-  final String techStack;
-  final String githubLink;
-  final int index;
+  final Map<String, dynamic> project;
   final bool isDarkMode;
 
-  const _ProjectCardWidget({
-    required this.title,
-    required this.description,
-    required this.techStack,
-    required this.githubLink,
-    required this.index,
-    required this.isDarkMode,
-  });
+  const _ProjectCardWidget({required this.project, required this.isDarkMode});
 
   @override
   State<_ProjectCardWidget> createState() => _ProjectCardWidgetState();
 }
 
-class _ProjectCardWidgetState extends State<_ProjectCardWidget>
-    with SingleTickerProviderStateMixin {
+class _ProjectCardWidgetState extends State<_ProjectCardWidget> {
   bool _isHovered = false;
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
 
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-    );
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.02,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  // Launch URL
-  Future<void> _launchURL(String url) async {
-    final Uri uri = Uri.parse(url);
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      debugPrint('Could not launch $url');
+  void _launchURL(String? url) async {
+    if (url == null) return;
+    if (!await launchUrl(Uri.parse(url))) {
+      throw 'Could not launch $url';
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Different gradient for each project card
-    final gradients = [
-      AppTheme.primaryGradient,
-      const LinearGradient(
-        colors: [Color(0xFF667eea), Color(0xFF764ba2)],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-      const LinearGradient(
-        colors: [Color(0xFF2193b0), Color(0xFF6dd5ed)],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-      const LinearGradient(
-        colors: [Color(0xFFf093fb), Color(0xFFf5576c)],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-    ];
-
-    final selectedGradient = gradients[widget.index % gradients.length];
-
     return MouseRegion(
-      onEnter: (_) {
-        setState(() => _isHovered = true);
-        _controller.forward();
-      },
-      onExit: (_) {
-        setState(() => _isHovered = false);
-        _controller.reverse();
-      },
-      child: ScaleTransition(
-        scale: _scaleAnimation,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedScale(
+        scale: _isHovered ? 1.02 : 1.0,
+        duration: const Duration(milliseconds: 300),
+        child: Container(
           decoration: BoxDecoration(
-            color: widget.isDarkMode ? AppTheme.cardDark : AppTheme.cardLight,
+            color: widget.isDarkMode
+                ? AppTheme.cardDark.withOpacity(0.5)
+                : AppTheme.cardLight,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
               color: _isHovered
-                  ? AppTheme.primaryBlue
-                  : (widget.isDarkMode
-                        ? AppTheme.primaryBlue.withOpacity(0.1)
-                        : AppTheme.primaryBlue.withOpacity(0.05)),
-              width: 2,
+                  ? AppTheme.primaryBlue.withOpacity(0.3)
+                  : Colors.white.withOpacity(0.05),
+              width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: _isHovered
-                    ? AppTheme.primaryBlue.withOpacity(0.25)
-                    : Colors.black.withOpacity(widget.isDarkMode ? 0.3 : 0.08),
-                blurRadius: _isHovered ? 30 : 15,
-                offset: Offset(0, _isHovered ? 12 : 6),
-                spreadRadius: _isHovered ? 2 : 0,
+                color: Colors.black.withOpacity(_isHovered ? 0.3 : 0.1),
+                blurRadius: _isHovered ? 30 : 20,
+                offset: Offset(0, _isHovered ? 15 : 10),
               ),
             ],
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header with gradient accent
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  gradient: selectedGradient.scale(0.15),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(22),
-                    topRight: Radius.circular(22),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Project Image Container
+                Expanded(
+                  flex: 4,
+                  child: Stack(
+                    children: [_buildImage(), if (_isHovered) _buildOverlay()],
                   ),
                 ),
-                child: Row(
-                  children: [
-                    // Project Icon with gradient
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        gradient: selectedGradient,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: selectedGradient.colors.first.withOpacity(
-                              0.4,
-                            ),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
+                // Project Details
+                Expanded(
+                  flex: 6,
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.project['title'],
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                            color: widget.isDarkMode
+                                ? AppTheme.textLight
+                                : AppTheme.textDark,
                           ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.code,
-                        color: AppTheme.textLight,
-                        size: 28,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-
-                    // Project Title
-                    Expanded(
-                      child: Text(
-                        widget.title,
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: widget.isDarkMode
-                              ? AppTheme.textLight
-                              : AppTheme.textDark,
-                          letterSpacing: 0.3,
                         ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Content
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Project Description
-                      Text(
-                        widget.description,
-                        style: TextStyle(
-                          fontSize: 15,
-                          height: 1.7,
-                          color: widget.isDarkMode
-                              ? AppTheme.textGrey
-                              : AppTheme.textGrey,
+                        const SizedBox(height: 12),
+                        Expanded(
+                          child: Text(
+                            widget.project['description'],
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 15,
+                              height: 1.6,
+                              color: AppTheme.textGrey,
+                            ),
+                          ),
                         ),
-                        maxLines: 4,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Tech Stack Tags
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: widget.techStack.split(', ').map((tech) {
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 7,
-                            ),
-                            decoration: BoxDecoration(
-                              color: widget.isDarkMode
-                                  ? AppTheme.primaryBlue.withOpacity(0.15)
-                                  : AppTheme.primaryBlue.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: widget.isDarkMode
-                                    ? AppTheme.primaryBlue.withOpacity(0.3)
-                                    : AppTheme.primaryBlue.withOpacity(0.2),
-                                width: 1,
-                              ),
-                            ),
-                            child: Text(
-                              tech,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: widget.isDarkMode
-                                    ? AppTheme.primaryBlue.withOpacity(0.9)
-                                    : AppTheme.primaryBlue,
-                                letterSpacing: 0.2,
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      const Spacer(),
-
-                      // Action Buttons Row
-                      Row(
-                        children: [
-                          // GitHub Button
-                          Expanded(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                gradient: selectedGradient,
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: _isHovered
-                                    ? [
-                                        BoxShadow(
-                                          color: selectedGradient.colors.first
-                                              .withOpacity(0.4),
-                                          blurRadius: 12,
-                                          offset: const Offset(0, 4),
-                                        ),
-                                      ]
-                                    : [],
-                              ),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(12),
-                                  onTap: () => _launchURL(widget.githubLink),
-                                  child: const Padding(
-                                    padding: EdgeInsets.symmetric(vertical: 14),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.code,
-                                          size: 20,
-                                          color: AppTheme.textLight,
-                                        ),
-                                        SizedBox(width: 8),
-                                        Text(
-                                          'View Code',
-                                          style: TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: AppTheme.textLight,
-                                            letterSpacing: 0.3,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-
-                          // Live Demo Button (Optional)
-                          Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: widget.isDarkMode
-                                    ? AppTheme.primaryBlue.withOpacity(0.5)
-                                    : AppTheme.primaryBlue,
-                                width: 2,
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(12),
-                                onTap: () => _launchURL(widget.githubLink),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 14,
-                                  ),
-                                  child: Icon(
-                                    Icons.launch,
-                                    size: 20,
-                                    color: widget.isDarkMode
-                                        ? AppTheme.primaryBlue
-                                        : AppTheme.primaryBlue,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                        const SizedBox(height: 20),
+                        _buildTechStack(widget.project['techStack'] as String),
+                        const SizedBox(height: 20),
+                        _buildActionButtons(),
+                      ],
+                    ),
                   ),
                 ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImage() {
+    return AnimatedScale(
+      scale: _isHovered ? 1.1 : 1.0,
+      duration: const Duration(milliseconds: 500),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(color: AppTheme.primaryBlue.withOpacity(0.1)),
+        child: widget.project['image'] != null
+            ? Image.asset(widget.project['image'], fit: BoxFit.cover)
+            : Center(
+                child: Icon(
+                  Icons.image_outlined,
+                  size: 48,
+                  color: AppTheme.primaryBlue.withOpacity(0.3),
+                ),
               ),
-            ],
+      ),
+    );
+  }
+
+  Widget _buildOverlay() {
+    return Container(
+      decoration: BoxDecoration(color: AppTheme.primaryBlue.withOpacity(0.2)),
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.remove_red_eye, color: AppTheme.primaryBlue),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTechStack(String techStack) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: techStack.split(', ').map((t) => _buildTechBadge(t)).toList(),
+    );
+  }
+
+  Widget _buildTechBadge(String tech) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryBlue.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: AppTheme.primaryBlue.withOpacity(0.2)),
+      ),
+      child: Text(
+        tech,
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: AppTheme.primaryBlue,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButtons() {
+    return Row(
+      children: [
+        _buildActionButton(
+          'GitHub',
+          Icons.code,
+          () => _launchURL(widget.project['githubLink']),
+        ),
+        // Add Live Demo button logic if needed
+      ],
+    );
+  }
+
+  Widget _buildActionButton(String label, IconData icon, VoidCallback onTap) {
+    return Expanded(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              border: Border.all(color: AppTheme.primaryBlue.withOpacity(0.3)),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 16, color: AppTheme.primaryBlue),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.primaryBlue,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

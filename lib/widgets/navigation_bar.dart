@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme.dart';
 
@@ -15,53 +16,72 @@ class CustomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final size = MediaQuery.of(context).size;
+    final isMobile = size.width < 1024;
 
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 20 : 60,
+      margin: EdgeInsets.symmetric(
+        horizontal: isMobile ? 12 : 40,
         vertical: 20,
       ),
-      decoration: BoxDecoration(
-        color: isDarkMode
-            ? AppTheme.cardDark.withOpacity(0.95)
-            : AppTheme.cardLight.withOpacity(0.95),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-        border: Border(
-          bottom: BorderSide(
-            color: isDarkMode
-                ? AppTheme.primaryBlue.withOpacity(0.2)
-                : AppTheme.primaryBlue.withOpacity(0.1),
-            width: 1,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: isMobile ? 20 : 40,
+              vertical: 12,
+            ),
+            decoration: BoxDecoration(
+              color: isDarkMode
+                  ? AppTheme.darkBackground.withOpacity(0.4)
+                  : Colors.white.withOpacity(0.6),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isDarkMode
+                    ? Colors.white.withOpacity(0.08)
+                    : Colors.black.withOpacity(0.08),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildLogo(),
+                if (isMobile)
+                  _buildMobileMenu(context)
+                else
+                  _buildDesktopMenu(),
+              ],
+            ),
           ),
         ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _buildLogo(),
-          if (isMobile) _buildMobileMenu(context) else _buildDesktopMenu(),
-        ],
       ),
     );
   }
 
   Widget _buildLogo() {
-    return ShaderMask(
-      shaderCallback: (bounds) => AppTheme.primaryGradient.createShader(bounds),
-      child: const Text(
-        'Abhinav',
-        style: TextStyle(
-          fontSize: 28,
-          fontWeight: FontWeight.bold,
-          fontFamily: 'Poppins',
-          color: Colors.white,
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () => onMenuTap(0),
+        child: Text(
+          'ABHINAV',
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w900,
+            fontFamily: 'Poppins',
+            color: AppTheme.primaryBlue,
+            letterSpacing: 1.0,
+          ),
         ),
       ),
     );
@@ -70,41 +90,13 @@ class CustomNavigationBar extends StatelessWidget {
   Widget _buildDesktopMenu() {
     return Row(
       children: [
-        _AnimatedNavItem(
-          title: 'Home',
-          index: 0,
-          onTap: onMenuTap,
-          isDarkMode: isDarkMode,
-        ),
-        const SizedBox(width: 30),
-        _AnimatedNavItem(
-          title: 'About',
-          index: 1,
-          onTap: onMenuTap,
-          isDarkMode: isDarkMode,
-        ),
-        const SizedBox(width: 30),
-        _AnimatedNavItem(
-          title: 'Skills',
-          index: 2,
-          onTap: onMenuTap,
-          isDarkMode: isDarkMode,
-        ),
-        const SizedBox(width: 30),
-        _AnimatedNavItem(
-          title: 'Projects',
-          index: 3,
-          onTap: onMenuTap,
-          isDarkMode: isDarkMode,
-        ),
-        const SizedBox(width: 30),
-        _AnimatedNavItem(
-          title: 'Contact',
-          index: 4,
-          onTap: onMenuTap,
-          isDarkMode: isDarkMode,
-        ),
-        const SizedBox(width: 30),
+        _NavItem(title: 'Home', index: 0, onTap: onMenuTap),
+        _NavItem(title: 'Experience', index: 2, onTap: onMenuTap),
+        _NavItem(title: 'About', index: 1, onTap: onMenuTap),
+        _NavItem(title: 'Skills', index: 3, onTap: onMenuTap),
+        _NavItem(title: 'Projects', index: 4, onTap: onMenuTap),
+        _NavItem(title: 'Contact', index: 5, onTap: onMenuTap),
+        const SizedBox(width: 15),
         _buildThemeToggle(),
       ],
     );
@@ -114,227 +106,124 @@ class CustomNavigationBar extends StatelessWidget {
     return Row(
       children: [
         _buildThemeToggle(),
-        const SizedBox(width: 8),
-        _HamburgerMenuButton(
+        const SizedBox(width: 5),
+        IconButton(
+          icon: Icon(
+            Icons.menu_rounded,
+            color: isDarkMode ? Colors.white : Colors.black,
+            size: 24,
+          ),
           onPressed: () => _showMobileDrawer(context),
-          isDarkMode: isDarkMode,
         ),
       ],
     );
   }
 
   Widget _buildThemeToggle() {
-    return _ThemeToggleButton(isDarkMode: isDarkMode, onToggle: onThemeToggle);
+    return IconButton(
+      icon: Icon(
+        isDarkMode ? Icons.wb_sunny_rounded : Icons.nightlight_round_rounded,
+        size: 20,
+        color: isDarkMode ? Colors.white : Colors.black,
+      ),
+      onPressed: () => onThemeToggle(!isDarkMode),
+    );
   }
 
   void _showMobileDrawer(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: isDarkMode ? AppTheme.cardDark : AppTheme.cardLight,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 20),
-              decoration: BoxDecoration(
-                color: isDarkMode
-                    ? AppTheme.textGrey.withOpacity(0.5)
-                    : AppTheme.textGrey.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            _buildMobileMenuItem(context, 'Home', 0, Icons.home),
-            _buildMobileMenuItem(context, 'About', 1, Icons.person),
-            _buildMobileMenuItem(context, 'Skills', 2, Icons.code),
-            _buildMobileMenuItem(context, 'Projects', 3, Icons.work),
-            _buildMobileMenuItem(context, 'Contact', 4, Icons.mail),
-          ],
+      backgroundColor: Colors.transparent,
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          decoration: BoxDecoration(
+            color: isDarkMode
+                ? AppTheme.cardDark.withOpacity(0.95)
+                : Colors.white.withOpacity(0.95),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildMobileItem(context, 'Home', 0, Icons.home_rounded),
+              _buildMobileItem(context, 'Experience', 2, Icons.history_rounded),
+              _buildMobileItem(context, 'About', 1, Icons.person_rounded),
+              _buildMobileItem(context, 'Skills', 3, Icons.code_rounded),
+              _buildMobileItem(context, 'Projects', 4, Icons.work_rounded),
+              _buildMobileItem(context, 'Contact', 5, Icons.mail_rounded),
+              const SizedBox(height: 10),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildMobileMenuItem(
+  Widget _buildMobileItem(
     BuildContext context,
     String title,
     int index,
     IconData icon,
   ) {
     return ListTile(
-      leading: Icon(
-        icon,
-        color: AppTheme.primaryBlue,
-      ),
+      leading: Icon(icon, color: AppTheme.primaryBlue, size: 22),
       title: Text(
         title,
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w500,
-          fontFamily: 'Poppins',
-          color: isDarkMode ? AppTheme.textLight : AppTheme.textDark,
-        ),
+        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
       ),
       onTap: () {
         Navigator.pop(context);
         onMenuTap(index);
       },
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
     );
   }
 }
 
-class _AnimatedNavItem extends StatefulWidget {
+class _NavItem extends StatefulWidget {
   final String title;
   final int index;
   final Function(int) onTap;
-  final bool isDarkMode;
 
-  const _AnimatedNavItem({
+  const _NavItem({
     required this.title,
     required this.index,
     required this.onTap,
-    required this.isDarkMode,
   });
 
   @override
-  State<_AnimatedNavItem> createState() => _AnimatedNavItemState();
+  State<_NavItem> createState() => _NavItemState();
 }
 
-class _AnimatedNavItemState extends State<_AnimatedNavItem> {
+class _NavItemState extends State<_NavItem> {
   bool _isHovered = false;
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: GestureDetector(
         onTap: () => widget.onTap(widget.index),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 200),
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: _isHovered ? FontWeight.w600 : FontWeight.w500,
-                fontFamily: 'Poppins',
-                color: _isHovered
-                    ? AppTheme.primaryBlue
-                    : (widget.isDarkMode
-                        ? AppTheme.textLight
-                        : AppTheme.textDark),
-                letterSpacing: _isHovered ? 0.5 : 0,
-              ),
-              child: Text(widget.title),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          child: Text(
+            widget.title,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: _isHovered
+                  ? AppTheme.primaryBlue
+                  : (isDarkMode
+                        ? Colors.white.withOpacity(0.85)
+                        : Colors.black.withOpacity(0.75)),
+              letterSpacing: 0.2,
             ),
-            const SizedBox(height: 4),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeInOut,
-              height: 2,
-              width: _isHovered ? 30 : 0,
-              decoration: BoxDecoration(
-                gradient: AppTheme.primaryGradient,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ThemeToggleButton extends StatefulWidget {
-  final bool isDarkMode;
-  final Function(bool) onToggle;
-
-  const _ThemeToggleButton({required this.isDarkMode, required this.onToggle});
-
-  @override
-  State<_ThemeToggleButton> createState() => _ThemeToggleButtonState();
-}
-
-class _ThemeToggleButtonState extends State<_ThemeToggleButton> {
-  bool _isHovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        onTap: () => widget.onToggle(!widget.isDarkMode),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: _isHovered
-                ? AppTheme.primaryBlue.withOpacity(0.1)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            widget.isDarkMode ? Icons.light_mode : Icons.dark_mode,
-            color: _isHovered
-                ? AppTheme.primaryBlue
-                : (widget.isDarkMode ? AppTheme.textLight : AppTheme.textDark),
-            size: 22,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _HamburgerMenuButton extends StatefulWidget {
-  final VoidCallback onPressed;
-  final bool isDarkMode;
-
-  const _HamburgerMenuButton({
-    required this.onPressed,
-    required this.isDarkMode,
-  });
-
-  @override
-  State<_HamburgerMenuButton> createState() => _HamburgerMenuButtonState();
-}
-
-class _HamburgerMenuButtonState extends State<_HamburgerMenuButton> {
-  bool _isHovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        onTap: widget.onPressed,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: _isHovered
-                ? AppTheme.primaryBlue.withOpacity(0.1)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            Icons.menu,
-            color: _isHovered
-                ? AppTheme.primaryBlue
-                : (widget.isDarkMode ? AppTheme.textLight : AppTheme.textDark),
-            size: 24,
           ),
         ),
       ),
